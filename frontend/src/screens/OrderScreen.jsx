@@ -1,13 +1,102 @@
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Row, Col, ListGroup, Image, Card } from "react-bootstrap";
+import { Row, Col, ListGroup, Image, Card, Button } from "react-bootstrap";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
-import { useGetOrderDetailsQuery } from "../slices/orderApiSlice";
+import {
+  useGetOrderDetailsQuery,
+  usePayOrderMutation,
+  useGetPaypalClientIdQuery,
+} from "../slices/orderApiSlice";
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
-  const { data: order, isLoading, error } = useGetOrderDetailsQuery(orderId);
-  
+  const { userInfo } = useSelector((state) => state.auth);
+
+  // Fetch Order Details
+  const {
+    data: order,
+    refetch,
+    isLoading,
+    error,
+  } = useGetOrderDetailsQuery(orderId);
+
+  // Mutation to update the payment status of this order to Paid.
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  // helper functions to load paypal script
+  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+
+  // Query to get paypal client id stored at the server end.
+  const {
+    data: paypal,
+    isLoading: loadingPayPal,
+    error: errorPayPal,
+  } = useGetPaypalClientIdQuery();
+
+  // Note: Load Paypal Script
+  useEffect(() => {
+    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
+      const loadPaypalScript = async () => {
+        paypalDispatch({
+          type: "resetOptions",
+          value: {
+            "client-id": paypal.clientId,
+            currency: "USD",
+          },
+        });
+        paypalDispatch({ type: "setLoadingStatus", value: "pending" });
+      };
+      if (order && !order.isPaid) {
+        // Note: Check if Paypal is already loaded or not.
+        if (!window.paypal) {
+          loadPaypalScript();
+        }
+      }
+    }
+  }, [errorPayPal, loadingPayPal, order, paypal, paypalDispatch]);
+
+  // Note: Handler called when Paypal payment is complete
+  function onApprove(data, actions) {
+    return actions.order.capture().then(async function (details) {
+      try {
+        await payOrder({ orderId, details });
+        refetch();
+        toast.success("Order is paid");
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
+      }
+    });
+  }
+
+  async function onApproveTest() {
+    await payOrder({ orderId, details: { payer: {} } });
+    refetch();
+    toast.success("Order is paid");
+  }
+
+  function onError(err) {
+    toast.error(err.message);
+  }
+
+  // Note: Handler to let the paypal know how much amount needs to be paid
+  function createOrder(data, actions) {
+    return actions.order
+      .create({
+        purchase_units: [
+          {
+            amount: { value: order.totalPrice },
+          },
+        ],
+      })
+      .then((orderID) => {
+        return orderID;
+      });
+  }
+
   return isLoading ? (
     <Loader />
   ) : error ? (
@@ -116,7 +205,33 @@ const OrderScreen = () => {
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              {/* PAY ORDER PLACEHOLDER */}
+
+              {!order.isPaid && (
+                <ListGroup.Item>
+                  {loadingPay && <Loader />}
+                  {isPending ? (
+                    <Loader />
+                  ) : (
+                    <div>
+                      <Button
+                        style={{ marginBottom: "10px" }}
+                        onClick={onApproveTest}
+                      >
+                        Test Pay Order
+                      </Button>
+                      <div>
+                        {/* Note: Paypal buttons will be injectecd here by the Paypal script */}
+                        <PayPalButtons
+                          createOrder={createOrder}
+                          onApprove={onApprove}
+                          onError={onError}
+                        ></PayPalButtons>
+                      </div>
+                    </div>
+                  )}
+                </ListGroup.Item>
+              )}
+
               {/* {MARK AS DELIVERED PLACEHOLDER} */}
             </ListGroup>
           </Card>
