@@ -69,6 +69,8 @@ const ProductEditScreen = () => {
   }, [product]);
 
   const uploadFileHandler = async (e) => {
+    console.log(e.target.files);
+    
     // Note: Create a form data instance and add image to it.
     const formData = new FormData();
     formData.append('image', e.target.files[0]);
@@ -171,7 +173,7 @@ const ProductEditScreen = () => {
                 onChange={(e) => setDescription(e.target.value)}
               ></Form.Control>
             </Form.Group>
-            
+
             <Button
               type="submit"
               variant="primary"
