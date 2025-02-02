@@ -10,6 +10,7 @@ import {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
   useGetPaypalClientIdQuery,
+  useDeliverOrderMutation,
 } from "../slices/orderApiSlice";
 
 const OrderScreen = () => {
@@ -26,6 +27,9 @@ const OrderScreen = () => {
 
   // Mutation to update the payment status of this order to Paid.
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  // Mutation to mark the order as delivered.
+  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
 
   // helper functions to load paypal script
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
@@ -96,6 +100,11 @@ const OrderScreen = () => {
         return orderID;
       });
   }
+
+  const deliverHandler = async () => {
+    await deliverOrder(orderId);
+    refetch();
+  };
 
   return isLoading ? (
     <Loader />
@@ -232,7 +241,21 @@ const OrderScreen = () => {
                 </ListGroup.Item>
               )}
 
-              {/* {MARK AS DELIVERED PLACEHOLDER} */}
+              {loadingDeliver && <Loader />}
+              {userInfo &&
+                userInfo.isAdmin &&
+                order.isPaid &&
+                !order.isDelivered && (
+                  <ListGroup.Item>
+                    <Button
+                      type="button"
+                      className="btn btn-block"
+                      onClick={deliverHandler}
+                    >
+                      Mark As Delivered
+                    </Button>
+                  </ListGroup.Item>
+                )}
             </ListGroup>
           </Card>
         </Col>
