@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { LinkContainer } from "react-router-bootstrap";
 import { Table, Button, Row, Col } from "react-bootstrap";
 import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
@@ -11,7 +12,8 @@ import { toast } from "react-toastify";
 
 const ProductListScreen = () => {
   const { data: products, isLoading, error, refetch } = useGetProductsQuery();
-  const [createProduct, { isLoading: loadingCreate }] = useCreateProductMutation();
+  const [createProduct, { isLoading: loadingCreate }] =
+    useCreateProductMutation();
 
   const deleteHandler = () => {
     console.log("delete");
@@ -42,7 +44,7 @@ const ProductListScreen = () => {
       </Row>
 
       {loadingCreate && <Loader />}
-      
+
       {isLoading ? (
         <Loader />
       ) : error ? (
