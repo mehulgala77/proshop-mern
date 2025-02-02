@@ -68,9 +68,7 @@ const ProductEditScreen = () => {
     }
   }, [product]);
 
-  const uploadFileHandler = async (e) => {
-    console.log(e.target.files);
-    
+  const uploadFileHandler = async (e) => {    
     // Note: Create a form data instance and add image to it.
     const formData = new FormData();
     formData.append('image', e.target.files[0]);
