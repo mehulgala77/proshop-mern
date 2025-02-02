@@ -12,7 +12,7 @@ import {
 } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 
-import { useGetProductDetailsQuery } from "../slices/productSlice";
+import { useGetProductDetailsQuery } from "../slices/productsApiSlice";
 import Rating from "../components/Rating";
 import Loader from "../components/Loader";
 import Message from "../components/Message";

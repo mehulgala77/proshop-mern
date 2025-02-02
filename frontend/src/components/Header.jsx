@@ -2,7 +2,7 @@ import { Navbar, Nav, Container, Badge, NavDropdown } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useLogoutMutation } from "../slices/userApiSlice";
+import { useLogoutMutation } from "../slices/usersApiSlice";
 import { logout } from "../slices/authSlice";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
 import logo from '../assets/logo.png';
