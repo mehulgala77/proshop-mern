@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBox from "./SearchBox";
 import { useLogoutMutation } from "../slices/usersApiSlice";
 import { logout } from "../slices/authSlice";
+import { resetCart } from "../slices/cartSlice";
 import { FaShoppingCart, FaUser } from "react-icons/fa";
 import logo from '../assets/logo.png';
 
@@ -21,6 +22,7 @@ const Header = () => {
     try {
       await logoutApiCall().unwrap();
       dispatch(logout());
+      dispatch(resetCart());
       navigate("/login");
     } catch (err) {
       console.error(err);
