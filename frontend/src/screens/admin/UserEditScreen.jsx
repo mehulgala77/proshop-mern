@@ -57,6 +57,8 @@ const UserEditScreen = () => {
       <FormContainer>
         <h1>Edit User</h1>
 
+        {loadingUpdate && <Loader />}
+        
         {isLoading ? (
           <Loader />
         ) : error ? (
@@ -93,7 +95,7 @@ const UserEditScreen = () => {
                 onChange={(e) => setIsAdmin(e.target.checked)}
               ></Form.Check>
             </Form.Group>
-            
+
             <Button type="submit" variant="primary">
               Update
             </Button>
